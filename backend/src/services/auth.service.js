@@ -105,8 +105,8 @@ export async function startMfaEnrollment(userId) {
     }
 
     const secret = speakeasy.generateSecret({
-        name: `DMS (${user.username})`,
-        issuer: "DMS",
+        name: `pramaanX (${user.username})`,
+        issuer: "pramaanX",
     });
     await userRepository.setPendingMfaSecret(userId, secret.base32);
     const qrDataUrl = await qrcode.toDataURL(secret.otpauth_url);

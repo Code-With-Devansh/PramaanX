@@ -7,7 +7,7 @@ const CLASSIFICATIONS = ['PUBLIC', 'RESTRICTED', 'CONFIDENTIAL', 'SECRET'];
 const CUSTODY_ACTIONS = ['SIGNED', 'TRANSFERRED', 'SEALED', 'LEGAL_HOLD', 'DISCLOSED', 'RESTORED'];
 
 /**
- * DocumentContract — the integrity & chain-of-custody smart contract for the DMS.
+ * DocumentContract — the integrity & chain-of-custody smart contract for the pramaanX.
  *
  * World-state key = versionId  (== Postgres document_versions.id — that is the
  * join between the ledger and the SQL mirror). The stored value is the

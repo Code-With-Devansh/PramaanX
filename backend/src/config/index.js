@@ -53,7 +53,7 @@ export default {
     publicEndpoint:
       process.env.STORAGE_PUBLIC_ENDPOINT || process.env.STORAGE_ENDPOINT,
     region: process.env.STORAGE_REGION || "us-east-1",
-    bucket: process.env.STORAGE_BUCKET || "dms-documents",
+    bucket: process.env.STORAGE_BUCKET || "pramaanx-documents",
     accessKeyId: process.env.STORAGE_ACCESS_KEY,
     secretAccessKey: process.env.STORAGE_SECRET_KEY,
     // MinIO and other S3-compatibles need path-style addressing

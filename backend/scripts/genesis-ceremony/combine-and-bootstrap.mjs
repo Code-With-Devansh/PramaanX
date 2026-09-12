@@ -22,7 +22,7 @@
 // Options:
 //   --roster <path>       (required) JSON: { roster:[...], pools:[...], shares?:[...] }
 //   --secret-file <path>  read the founding secret from this file (trailing newline trimmed)
-//   --url <baseUrl>       API base URL (default $DMS_API_URL or http://localhost:3000)
+//   --url <baseUrl>       API base URL (default $pramaanX_API_URL or http://localhost:3000)
 //   -h, --help            print this help
 
 import { readFile } from "node:fs/promises";
@@ -32,7 +32,7 @@ const HELP = `genesis-ceremony bootstrap
 
   --roster <path>       (required) JSON descriptor: { roster, pools, shares? }
   --secret-file <path>  read the founding secret from a file (or set GENESIS_SECRET)
-  --url <baseUrl>       API base URL (default $DMS_API_URL or http://localhost:3000)
+  --url <baseUrl>       API base URL (default $pramaanX_API_URL or http://localhost:3000)
   -h, --help            show this help
 
 The secret is read from GENESIS_SECRET or --secret-file only, never from argv.`;
@@ -86,7 +86,7 @@ async function main() {
     fail("roster JSON must contain `roster` and `pools` arrays");
   }
 
-  const base = (values.url ?? process.env.DMS_API_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+  const base = (values.url ?? process.env.pramaanX_API_URL ?? "http://localhost:3000").replace(/\/+$/, "");
   const endpoint = `${base}/api/v1/governance/bootstrap`;
   const body = { secret, roster, pools, ...(shares ? { shares } : {}) };
 

@@ -52,7 +52,7 @@ scanners/mirrors flag the pattern on sight even though it's inert.
 ## 1. Start the stack
 
 ```bash
-cd /path/to/DMS
+cd /path/to/pramaanX
 cp .env.example .env   # if you don't already have one; fill in secrets as needed
 npm run dev
 ```
@@ -440,7 +440,7 @@ anything under `src/processing/` — they run in under a second and don't need
 | `document_extractions` has no row | worker never picked up the job — check `PROCESSING_ENABLED=true` and that `worker` is running and connected to the same Redis as `api` | `docker compose logs worker`; check `REDIS_URL` matches on both services |
 | EICAR upload doesn't quarantine | ClamAV signatures didn't finish downloading, or you saved the string with different bytes (must be the exact 68-byte EICAR string, no CRLF/trailing content added) | `wc -c test/fixtures/document-intelligence/eicar-test-file.txt` → must print `68`; `docker compose exec clamav clamdscan --version` |
 | `scripts/generate-ocr-samples.py` errors on font | no truetype font found on the host | install `fonts-dejavu` (`apt install fonts-dejavu-core`) or edit `FONT_CANDIDATES` in the script to point at any `.ttf` you have |
-| `scripts/dev-seed.mjs` fails with a unique-constraint error | ran before a previous partial run committed inconsistent rows | the script is idempotent by design (`ON CONFLICT DO NOTHING` + re-select) — rerunning is safe; if it still fails, `docker compose exec postgres psql -U postgres -d DMS` and inspect `orgs`/`jurisdictions`/`users`/`cases` for the demo rows |
+| `scripts/dev-seed.mjs` fails with a unique-constraint error | ran before a previous partial run committed inconsistent rows | the script is idempotent by design (`ON CONFLICT DO NOTHING` + re-select) — rerunning is safe; if it still fails, `docker compose exec postgres psql -U postgres -d pramaanX` and inspect `orgs`/`jurisdictions`/`users`/`cases` for the demo rows |
 
 ---
 

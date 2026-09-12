@@ -1,7 +1,7 @@
 {
   "name": "document-cc",
   "version": "1.0.0",
-  "description": "DMS DocumentContract chaincode — document-version hashes + chain-of-custody on Hyperledger Fabric",
+  "description": "pramaanX DocumentContract chaincode — document-version hashes + chain-of-custody on Hyperledger Fabric",
   "main": "index.js",
   "engines": {
     "node": ">=18"

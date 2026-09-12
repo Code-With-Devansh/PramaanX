@@ -28,7 +28,7 @@ import { createTagger } from "./processing/tagging/index.js";
 // Ledger-anchoring worker process. Consumes the jobs enqueued by
 // src/jobs/ledger.queue.js (enqueueLedgerAnchor) and drives each version's
 // ledger_status from PENDING_LEDGER to ANCHORED (or FAILED after retries).
-// Runs as its own container (DMS-worker) so slow/unreachable ledger calls never
+// Runs as its own container (pramaanX-worker) so slow/unreachable ledger calls never
 // touch the API request path.
 
 const deps = { ledger, repo, db, recordAudit, AuditAction, TargetType };

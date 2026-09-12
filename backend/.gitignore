@@ -3,7 +3,7 @@ node_modules
 postman
 .postman
 .claude
-DMS.zip
+pramaanX.zip
 .idea
 # Fabric crypto copied out of the WSL test-network for the containerized gateway
 # client (DEV-ONLY signing cert/key + peer TLS CA). NEVER commit key material.

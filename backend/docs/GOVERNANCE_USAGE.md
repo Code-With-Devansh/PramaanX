@@ -1,6 +1,6 @@
 # Governance Sudo Actions — Usage Guide
 
-How to operate the DMS admin-hierarchy governance subsystem: bootstrap, the nine
+How to operate the pramaanX admin-hierarchy governance subsystem: bootstrap, the nine
 privileged ("sudo") actions, the Tier-3 recovery ceremony, and the ABAC policy
 overlay. This is the operator/developer companion to `docs/GOVERNANCE.md` (which
 covers the *why* and the trust model). Here we cover the *how* — exact endpoints,

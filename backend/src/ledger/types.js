@@ -1,4 +1,4 @@
-// LedgerService — the seam between the DMS backend and the Hyperledger Fabric
+// LedgerService — the seam between the pramaanX backend and the Hyperledger Fabric
 // integrity layer (the deployed `document` chaincode / DocumentContract). Docs
 // only; JS has no interfaces, so these JSDoc typedefs are the contract that both
 // createInMemoryLedgerService (now) and a future FabricLedgerService must honour.

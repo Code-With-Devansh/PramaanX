@@ -1,4 +1,4 @@
-# Secure Legal & Investigation Document Management System (DMS)
+# Secure Legal & Investigation Document Management System (pramaanX)
 ### Design & Architecture Document
 
 > A secure, centralized, blockchain-anchored platform for law enforcement agencies, courts,
@@ -57,7 +57,7 @@ Many organizations still rely on paper-based systems or fragmented digital stora
 - Poor auditability and compliance tracking
 
 ### Objective
-Develop a **Secure Digital Document Management System (DMS)** that lets these organizations
+Develop a **Secure Digital Document Management System (pramaanX)** that lets these organizations
 securely store, organize, manage, retrieve, and share sensitive documents. The system must:
 
 - Digitize and centralize document storage
@@ -739,7 +739,7 @@ court-ready evidence bundle** — these make it read as a *legal-grade* system, 
 ## 17. App Name Suggestions
 
 **Professional & brandable:** LexVault (top pick), CaseChain, Provenance/ProvenChain, Custodia,
-AegisDMS, VeriDoc.
+AegispramaanX, VeriDoc.
 
 **Acronym-style:** SECURE (Secure Evidence & Case Unified Records Environment), SATARK (Secure
 Audit-Trail Archival & Records Keeper — *satark* = "vigilant"), PRAHARI (Police Records Archival &
@@ -767,4 +767,4 @@ judges); Nyaya (gravitas + local resonance).
 
 ---
 
-*Document generated from design discussion — Secure Legal & Investigation DMS.*
+*Document generated from design discussion — Secure Legal & Investigation pramaanX.*

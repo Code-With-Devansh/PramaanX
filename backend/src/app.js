@@ -69,7 +69,7 @@ async function start() {
   const server = createServer(app);
   await attachRealtimeServer(server, redisClient);
   server.listen(port, () => {
-    console.log(`DMS app listening on port ${port}`);
+    console.log(`pramaanX app listening on port ${port}`);
   });
 }
 

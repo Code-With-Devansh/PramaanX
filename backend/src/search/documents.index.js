@@ -3,7 +3,7 @@ import { opensearch } from "./opensearch.client.js";
 // One doc per (documentId), keyed by documentId (not versionId) — we only ever
 // index the CURRENT version (see search.service.js#indexDocument). Re-indexing
 // on every new version just overwrites the same _id.
-export const DOCUMENTS_INDEX = "dms-documents";
+export const DOCUMENTS_INDEX = "pramaanx-documents";
 
 // Fields kept here are deliberately NOT the full authorization model — see the
 // big comment in search.service.js#searchDocuments for why access control is

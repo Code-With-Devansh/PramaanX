@@ -12,7 +12,7 @@
 #   6. RecordCustodyEvent DISCLOSED
 #   7. GetDocumentHistory       (expect 3 immutable entries)
 #
-# Run from WSL:  bash /mnt/d/CodeBase/Projects/DMS/fabric/scripts/demo-invoke.sh
+# Run from WSL:  bash /mnt/d/CodeBase/Projects/pramaanX/fabric/scripts/demo-invoke.sh
 set -euo pipefail
 
 TN="$HOME/fabric/fabric-samples/test-network"

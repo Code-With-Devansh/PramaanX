@@ -425,7 +425,7 @@ Classification / need-to-know maps directly onto Fabric **Private Data Collectio
 - Only a **hash of that private data** is written to the shared channel ledger — so integrity is
   still provable network-wide **without revealing the content**.
 
-This is exactly the "confidential but auditable" property a legal DMS needs, and it's a strong
+This is exactly the "confidential but auditable" property a legal pramaanX needs, and it's a strong
 differentiator. **Treat PDCs as a later phase** — get the basic single-collection flow working first.
 
 ---

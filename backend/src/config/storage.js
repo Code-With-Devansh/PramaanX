@@ -25,11 +25,23 @@ const credentials = { accessKeyId, secretAccessKey };
 
 // Client for server-side operations (put/get/stat/delete). Talks to the
 // internal endpoint reachable from the API/worker containers.
+// Newer SDK versions default to attaching integrity checksums (CRC32 headers/
+// trailers) to requests like CreateBucket/PutObject. MinIO 400s on these, and
+// returns the error body in a shape the SDK's newer error parser can't decode
+// — surfacing as an opaque "Unknown: UnknownError" instead of a normal S3
+// error, which is what was crashing ensureBucket() before the app could boot.
+// WHEN_REQUIRED restores the old (pre-checksum-by-default) behavior.
+const checksumOverrides = {
+  requestChecksumCalculation: "WHEN_REQUIRED",
+  responseChecksumValidation: "WHEN_REQUIRED",
+};
+
 export const s3 = new S3Client({
   endpoint,
   region,
   forcePathStyle,
   credentials,
+  ...checksumOverrides,
 });
 
 // Client used ONLY to presign download URLs. It signs against the public
@@ -40,4 +52,5 @@ export const s3Signer = new S3Client({
   region,
   forcePathStyle,
   credentials,
+  ...checksumOverrides,
 });

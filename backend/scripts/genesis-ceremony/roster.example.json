@@ -3,7 +3,7 @@
   "roster": [
     {
       "fullName": "Ada Founder",
-      "email": "ada@dms.example",
+      "email": "ada@pramaanX.example",
       "role": "SYSTEM_ADMIN",
       "org": "hq",
       "clearance": "SECRET",
@@ -11,7 +11,7 @@
     },
     {
       "fullName": "Grace Founder",
-      "email": "grace@dms.example",
+      "email": "grace@pramaanX.example",
       "role": "SYSTEM_ADMIN",
       "org": "hq",
       "clearance": "SECRET",
@@ -19,7 +19,7 @@
     },
     {
       "fullName": "Alan Founder",
-      "email": "alan@dms.example",
+      "email": "alan@pramaanX.example",
       "role": "SYSTEM_ADMIN",
       "org": "hq",
       "clearance": "SECRET",
@@ -27,7 +27,7 @@
     },
     {
       "fullName": "Ren Security",
-      "email": "ren@dms.example",
+      "email": "ren@pramaanX.example",
       "role": "SECURITY_ADMIN",
       "org": "hq",
       "clearance": "SECRET",
@@ -35,7 +35,7 @@
     },
     {
       "fullName": "Ivy Security",
-      "email": "ivy@dms.example",
+      "email": "ivy@pramaanX.example",
       "role": "SECURITY_ADMIN",
       "org": "hq",
       "clearance": "SECRET",
@@ -61,11 +61,11 @@
   "pools": [
     {
       "poolType": "SYSTEM_ADMIN",
-      "members": ["ada@dms.example", "grace@dms.example", "alan@dms.example"]
+      "members": ["ada@pramaanX.example", "grace@pramaanX.example", "alan@pramaanX.example"]
     },
     {
       "poolType": "SECURITY_ADMIN",
-      "members": ["ren@dms.example", "ivy@dms.example"]
+      "members": ["ren@pramaanX.example", "ivy@pramaanX.example"]
     },
     {
       "poolType": "ORG_ADMIN",

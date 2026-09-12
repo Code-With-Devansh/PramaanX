@@ -46,7 +46,7 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
       # Built-in single-key KMS so SSE-S3 works in dev without standing up KES.
       # DEV-ONLY key — prod uses a real KMS/HSM; never reuse this value.
-      MINIO_KMS_SECRET_KEY: "dms-dev-key:LlrslPGKQIlzbsb/AR2WMlmKNvPY4Q+Q+5kWRHejXzU="
+      MINIO_KMS_SECRET_KEY: "pramaanX-dev-key:LlrslPGKQIlzbsb/AR2WMlmKNvPY4Q+Q+5kWRHejXzU="
     volumes:
       - minio_data:/data
 
@@ -103,7 +103,7 @@ services:
     environment:
       PORT: 3000
 
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/DMS
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/pramaanX
       REDIS_URL: redis://redis:6379
 
       # Object storage (MinIO). The API reaches MinIO over the Docker network
@@ -112,7 +112,7 @@ services:
       STORAGE_ENDPOINT: http://minio:9000
       STORAGE_PUBLIC_ENDPOINT: http://localhost:9000
       STORAGE_REGION: us-east-1
-      STORAGE_BUCKET: dms-documents
+      STORAGE_BUCKET: pramaanx-documents
       STORAGE_ACCESS_KEY: minioadmin
       STORAGE_SECRET_KEY: minioadmin
       STORAGE_FORCE_PATH_STYLE: "true"
@@ -153,7 +153,7 @@ services:
     # reaches Postgres + Redis over the internal network. It does NOT touch object
     # storage (its import graph excludes src/storage), so no MinIO env is needed.
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/DMS
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/pramaanX
       REDIS_URL: redis://redis:6379
       # LEDGER_DRIVER is intentionally NOT set here so it comes from .env (like the
       # api): LEDGER_DRIVER=fabric in .env then enables the real ledger for BOTH
@@ -176,7 +176,7 @@ services:
       postgres:
         condition: service_started
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/DMS
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/pramaanX
     volumes:
       - .:/usr/src/app
       - node_modules:/usr/src/app/node_modules

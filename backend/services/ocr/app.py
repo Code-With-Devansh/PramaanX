@@ -24,7 +24,7 @@ MAX_PAGES = int(os.environ.get("OCR_MAX_PAGES", "50"))
 DPI = int(os.environ.get("OCR_PDF_DPI", "200"))
 DEFAULT_LANG = os.environ.get("OCR_MODEL_LANG", "en")
 
-app = FastAPI(title="dms-ocr", docs_url=None, redoc_url=None)
+app = FastAPI(title="pramaanX-ocr", docs_url=None, redoc_url=None)
 
 # One engine per language, built lazily and cached. `use_angle_cls` handles
 # rotated scans; models download on first use into the mounted volume.

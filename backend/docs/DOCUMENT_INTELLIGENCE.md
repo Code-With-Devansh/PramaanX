@@ -73,7 +73,7 @@ swappable; the worker never touches a file until ClamAV clears it.
      status, error.
    - `document_entities` — normalized NER output, one row per mention.
    - `documents.tags` — plain tag strings unioned in (existing column).
-   - OpenSearch `dms-documents` — `extractedText` + `entities` + `tags` fields
+   - OpenSearch `pramaanX-documents` — `extractedText` + `entities` + `tags` fields
      become populated (they were indexed empty before).
 
 6. **Read** — `GET /documents/:id/versions/:vid/extraction` returns the results;
@@ -186,7 +186,7 @@ swappable; the worker never touches a file until ClamAV clears it.
 
 ### Untouched but now load-bearing (reference only)
 
-- `src/search/documents.index.js` — the `dms-documents` mapping already had
+- `src/search/documents.index.js` — the `pramaanX-documents` mapping already had
   `extractedText` (text) and `entities` (keyword) fields waiting to be filled.
 - `src/services/search.service.js` — `indexDocumentVersion({documentId, versionId,
   extractedText, entities, tags})` was already called by the processor; it now
@@ -246,7 +246,7 @@ services/documents.service.js ──(store bytes)──▶ storage/*  ──▶ 
                                   audit_log               (VERSION_PROCESSED)
                                        │
                                        ▼ best-effort
-                        services/search.service.js#indexDocumentVersion ──▶ OpenSearch dms-documents
+                        services/search.service.js#indexDocumentVersion ──▶ OpenSearch pramaanX-documents
 
                     jobs/documentProcessing.reconcile.js (setInterval in worker.js)
                         listStuckExtractions() ──▶ re-enqueue stuck versions
