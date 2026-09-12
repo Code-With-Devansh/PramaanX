@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { useState } from "react";
 import { useAuth } from "../lib/AuthContext";
 import { useReference } from "../lib/ReferenceContext";
 import { ROLE_DESCRIPTIONS, titleCase } from "../lib/format";
@@ -11,24 +12,48 @@ const navItems = [
   { to: "/governance", label: "Governance", permission: "governance:read" },
   { to: "/audit", label: "Audit Log", permission: "audit:read" },
   { to: "/admin/users", label: "Users", permission: "user:read" },
-  { to: "/admin/reference", label: "Reference Data", permission: "reference:read" },
+  {
+    to: "/admin/reference",
+    label: "Reference Data",
+    permission: "reference:read",
+  },
 ];
 
 export default function AppShell() {
   const { user, logout } = useAuth();
   const { orgName } = useReference();
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
-    <div className="flex h-screen bg-slate-50">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
+    <div className="flex min-h-screen bg-slate-50">
+      {/* //for responsive */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <aside
+        className={`
+    fixed inset-y-0 left-0 z-50
+    flex w-60 shrink-0 flex-col
+    border-r border-slate-200 bg-white
+    transition-transform duration-300
+    lg:static lg:translate-x-0
+    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+  `}
+      >
         <div className="flex h-16 items-center justify-between gap-2 border-b border-slate-200 px-5">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded bg-blue-700 text-sm font-bold text-white">
               DM
             </div>
             <div className="leading-tight">
-              <p className="text-sm font-semibold text-slate-900">LexVault DMS</p>
-              <p className="text-[11px] text-slate-500">Legal &amp; Investigation Records</p>
+              <p className="text-sm font-semibold text-slate-900">
+                LexVault DMS
+              </p>
+              <p className="text-[11px] text-slate-500">
+                Legal &amp; Investigation Records
+              </p>
             </div>
           </div>
         </div>
@@ -36,15 +61,21 @@ export default function AppShell() {
           {navItems.map((item) =>
             item.permission ? (
               <Can key={item.to} permission={item.permission}>
-                <NavItem {...item} />
+                <NavItem {...item} onClick={() => setSidebarOpen(false)} />
               </Can>
             ) : (
-              <NavItem key={item.to} {...item} />
-            )
+              <NavItem
+                key={item.to}
+                {...item}
+                onClick={() => setSidebarOpen(false)}
+              />
+            ),
           )}
         </nav>
         <div className="border-t border-slate-200 p-4">
-          <p className="truncate text-sm font-medium text-slate-900">{user?.fullName}</p>
+          <p className="truncate text-sm font-medium text-slate-900">
+            {user?.fullName}
+          </p>
           <p className="truncate text-xs text-slate-500">
             {titleCase(user?.role)} · {orgName(user?.orgId)}
           </p>
@@ -62,8 +93,22 @@ export default function AppShell() {
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-6xl px-6 py-8">
-          <div className="mb-4 flex justify-end">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="rounded-md p-2 text-slate-600 hover:bg-slate-100"
+            aria-label="Open navigation"
+          >
+            ☰
+          </button>
+
+          <p className="text-sm font-semibold text-slate-900">LexVault DMS</p>
+
+          <NotificationsBell />
+        </header>
+        <div className="mx-auto max-w-[1800px] px-4 sm:px-5 md:px-6 py-4">
+          <div className="mb-2 flex justify-end">
             <NotificationsBell />
           </div>
           <Outlet />
@@ -73,14 +118,17 @@ export default function AppShell() {
   );
 }
 
-function NavItem({ to, label, end }) {
+function NavItem({ to, label, end, onClick }) {
   return (
     <NavLink
       to={to}
       end={end}
+      onClick={onClick}
       className={({ isActive }) =>
         `block rounded-md px-3 py-2 text-sm font-medium ${
-          isActive ? "bg-blue-50 text-blue-800" : "text-slate-600 hover:bg-slate-100"
+          isActive
+            ? "bg-blue-50 text-blue-800"
+            : "text-slate-600 hover:bg-slate-100"
         }`
       }
     >

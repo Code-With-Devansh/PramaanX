@@ -66,7 +66,7 @@ export default function UsersList() {
 
       <Card className="mb-4 p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <div className="min-w-[220px] flex-1">
+          <div className="min-w-220px flex-1">
             <Input
               label="Search"
               placeholder="Name, email…"

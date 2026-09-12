@@ -1,7 +1,12 @@
+
 import { useCallback, useEffect, useState } from "react";
+
 import { api } from "../lib/api";
+
 import { useAuth } from "../lib/AuthContext";
+
 import { formatDate } from "../lib/format";
+
 import { Button, ErrorText, Spinner, apiErrorMessage } from "./ui";
 
 // Mounts a comment thread against either a case or a document. Pass exactly
@@ -11,19 +16,29 @@ import { Button, ErrorText, Spinner, apiErrorMessage } from "./ui";
 // regardless of which thread the comment lives in.
 export default function CommentsThread({ caseId, documentId }) {
   const { user } = useAuth();
-  const listEndpoint = documentId ? `/documents/${documentId}/comments` : `/cases/${caseId}/comments`;
+
+  const listEndpoint = documentId
+    ? `/documents/${documentId}/comments`
+    : `/cases/${caseId}/comments`;
 
   const [comments, setComments] = useState([]);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState("");
+
   const [body, setBody] = useState("");
+
   const [posting, setPosting] = useState(false);
+
   const [editingId, setEditingId] = useState(null);
+
   const [editBody, setEditBody] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
+
     try {
       const res = await api.get(listEndpoint);
       setComments(res.data.items);
@@ -40,9 +55,12 @@ export default function CommentsThread({ caseId, documentId }) {
 
   async function submit(e) {
     e.preventDefault();
+
     if (!body.trim()) return;
+
     setPosting(true);
     setError("");
+
     try {
       await api.post(listEndpoint, { body: body.trim() });
       setBody("");
@@ -56,9 +74,14 @@ export default function CommentsThread({ caseId, documentId }) {
 
   async function saveEdit(commentId) {
     if (!editBody.trim()) return;
+
     setError("");
+
     try {
-      await api.patch(`/comments/${commentId}`, { body: editBody.trim() });
+      await api.patch(`/comments/${commentId}`, {
+        body: editBody.trim(),
+      });
+
       setEditingId(null);
       await load();
     } catch (err) {
@@ -68,7 +91,9 @@ export default function CommentsThread({ caseId, documentId }) {
 
   async function handleDelete(commentId) {
     if (!window.confirm("Delete this comment?")) return;
+
     setError("");
+
     try {
       await api.delete(`/comments/${commentId}`);
       await load();
@@ -78,7 +103,7 @@ export default function CommentsThread({ caseId, documentId }) {
   }
 
   return (
-    <div>
+    <div className="min-w-0">
       <ErrorText>{error}</ErrorText>
 
       {loading ? (
@@ -86,20 +111,30 @@ export default function CommentsThread({ caseId, documentId }) {
           <Spinner />
         </div>
       ) : comments.length === 0 ? (
-        <p className="mb-4 text-sm text-slate-500">No comments yet.</p>
+        <p className="mb-4 text-sm text-slate-500">
+          No comments yet.
+        </p>
       ) : (
         <ul className="mb-4 space-y-3">
           {comments.map((c) => {
             const mine = c.author?.id === user?.id;
+
             return (
-              <li key={c.id} className="rounded-md border border-slate-100 bg-slate-50 p-3 text-sm">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="font-mono text-xs text-slate-500">{c.author?.id}</span>
-                  <span className="text-xs text-slate-400">
+              <li
+                key={c.id}
+                className="min-w-0 rounded-md border border-slate-100 bg-slate-50 p-3 text-sm"
+              >
+                <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+                  <span className="min-w-0 break-all font-mono text-xs text-slate-500">
+                    {c.author?.id}
+                  </span>
+
+                  <span className="shrink-0 text-xs text-slate-400">
                     {formatDate(c.createdAt)}
                     {c.editedAt ? " (edited)" : ""}
                   </span>
                 </div>
+
                 {editingId === c.id ? (
                   <div className="space-y-2">
                     <textarea
@@ -108,13 +143,18 @@ export default function CommentsThread({ caseId, documentId }) {
                       value={editBody}
                       onChange={(e) => setEditBody(e.target.value)}
                     />
-                    <div className="flex gap-2">
-                      <Button className="px-2 py-1 text-xs" onClick={() => saveEdit(c.id)}>
+
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Button
+                        className="w-full px-2 py-1 text-xs sm:w-auto"
+                        onClick={() => saveEdit(c.id)}
+                      >
                         Save
                       </Button>
+
                       <Button
                         variant="secondary"
-                        className="px-2 py-1 text-xs"
+                        className="w-full px-2 py-1 text-xs sm:w-auto"
                         onClick={() => setEditingId(null)}
                       >
                         Cancel
@@ -123,9 +163,12 @@ export default function CommentsThread({ caseId, documentId }) {
                   </div>
                 ) : (
                   <>
-                    <p className="whitespace-pre-wrap text-slate-800">{c.body}</p>
+                    <p className="wrap-break-words whitespace-pre-wrap text-slate-800">
+                      {c.body}
+                    </p>
+
                     {mine && (
-                      <div className="mt-2 flex gap-3">
+                      <div className="mt-2 flex flex-wrap gap-3">
                         <button
                           onClick={() => {
                             setEditingId(c.id);
@@ -135,6 +178,7 @@ export default function CommentsThread({ caseId, documentId }) {
                         >
                           Edit
                         </button>
+
                         <button
                           onClick={() => handleDelete(c.id)}
                           className="text-xs font-medium text-red-600 hover:underline"
@@ -151,15 +195,23 @@ export default function CommentsThread({ caseId, documentId }) {
         </ul>
       )}
 
-      <form onSubmit={submit} className="flex gap-2">
+      <form
+        onSubmit={submit}
+        className="flex flex-col gap-2 sm:flex-row"
+      >
         <textarea
           rows={2}
           placeholder="Write a comment… use @username to mention someone with access."
-          className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-600"
+          className="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-600"
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />
-        <Button type="submit" disabled={posting || !body.trim()}>
+
+        <Button
+          type="submit"
+          disabled={posting || !body.trim()}
+          className="w-full shrink-0 sm:w-auto"
+        >
           {posting ? "Posting…" : "Post"}
         </Button>
       </form>

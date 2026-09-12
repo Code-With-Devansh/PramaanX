@@ -1,13 +1,34 @@
 import { useState } from "react";
+
 import { api } from "../../lib/api";
+
 import { CLASSIFICATIONS, ROLES, titleCase } from "../../lib/format";
-import { Button, Card, ErrorText, Input, Select, apiErrorMessage } from "../../components/ui";
-import { OrgPicker, JurisdictionPicker } from "../../components/ReferencePicker";
+
+import {
+  Button,
+  Card,
+  ErrorText,
+  Input,
+  Select,
+  apiErrorMessage,
+} from "../../components/ui";
+
+import {
+  OrgPicker,
+  JurisdictionPicker,
+} from "../../components/ReferencePicker";
 
 // Admin-tier roles are appointed via /governance proposals, not this form —
 // the backend rejects them here (see users.service.js ADMIN_TIER_ROLES).
-const ADMIN_TIER_ROLES = new Set(["SYSTEM_ADMIN", "SECURITY_ADMIN", "ORG_ADMIN"]);
-const PROVISIONABLE_ROLES = ROLES.filter((r) => !ADMIN_TIER_ROLES.has(r));
+const ADMIN_TIER_ROLES = new Set([
+  "SYSTEM_ADMIN",
+  "SECURITY_ADMIN",
+  "ORG_ADMIN",
+]);
+
+const PROVISIONABLE_ROLES = ROLES.filter(
+  (r) => !ADMIN_TIER_ROLES.has(r)
+);
 
 export default function NewUserDialog({ onClose, onCreated }) {
   const [form, setForm] = useState({
@@ -19,6 +40,7 @@ export default function NewUserDialog({ onClose, onCreated }) {
     orgId: "",
     badgeId: "",
   });
+
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [created, setCreated] = useState(null);
@@ -31,6 +53,7 @@ export default function NewUserDialog({ onClose, onCreated }) {
     e.preventDefault();
     setBusy(true);
     setError("");
+
     try {
       const res = await api.post("/users", form);
       setCreated(res.data);
@@ -43,17 +66,26 @@ export default function NewUserDialog({ onClose, onCreated }) {
 
   if (created) {
     return (
-      <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 px-4">
-        <Card className="w-full max-w-md p-6">
-          <h2 className="text-lg font-semibold text-slate-900">User provisioned</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Share this one-time activation link with {created.user.fullName} so they can set a
-            password and enroll MFA.
+      <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-slate-900/50 px-3 py-4 sm:items-center sm:px-4 sm:py-6">
+        <Card className="my-auto w-full max-w-md p-4 sm:p-6">
+          <h2 className="text-lg font-semibold text-slate-900">
+            User provisioned
+          </h2>
+
+          <p className="mt-2 wrap-break-words text-sm text-slate-600">
+            Share this one-time activation link with{" "}
+            {created.user.fullName} so they can set a password and
+            enroll MFA.
           </p>
+
           <p className="mt-3 break-all rounded-md bg-slate-50 p-3 font-mono text-xs">
             {`${window.location.origin}/activate?token=${created.activationToken}`}
           </p>
-          <Button className="mt-4 w-full" onClick={() => onCreated(created)}>
+
+          <Button
+            className="mt-4 w-full"
+            onClick={() => onCreated(created)}
+          >
             Done
           </Button>
         </Card>
@@ -62,12 +94,21 @@ export default function NewUserDialog({ onClose, onCreated }) {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 px-4">
-      <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="text-lg font-semibold text-slate-900">Provision new user</h2>
+    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-slate-900/50 px-3 py-4 sm:items-center sm:px-4 sm:py-6">
+      <div className="my-auto max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-4 shadow-xl sm:p-6">
+        <h2 className="text-lg font-semibold text-slate-900">
+          Provision new user
+        </h2>
+
         <form onSubmit={submit} className="mt-4 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="Full name" required value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Input
+              label="Full name"
+              required
+              value={form.fullName}
+              onChange={(e) => set("fullName", e.target.value)}
+            />
+
             <Input
               label="Email"
               type="email"
@@ -76,15 +117,25 @@ export default function NewUserDialog({ onClose, onCreated }) {
               onChange={(e) => set("email", e.target.value)}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Select label="Role" value={form.role} onChange={(e) => set("role", e.target.value)}>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Select
+              label="Role"
+              value={form.role}
+              onChange={(e) => set("role", e.target.value)}
+            >
               {PROVISIONABLE_ROLES.map((r) => (
                 <option key={r} value={r}>
                   {titleCase(r)}
                 </option>
               ))}
             </Select>
-            <Select label="Clearance" value={form.clearance} onChange={(e) => set("clearance", e.target.value)}>
+
+            <Select
+              label="Clearance"
+              value={form.clearance}
+              onChange={(e) => set("clearance", e.target.value)}
+            >
               {CLASSIFICATIONS.map((c) => (
                 <option key={c} value={c}>
                   {titleCase(c)}
@@ -92,21 +143,44 @@ export default function NewUserDialog({ onClose, onCreated }) {
               ))}
             </Select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <JurisdictionPicker required value={form.jurisdictionId} onChange={(v) => set("jurisdictionId", v)} />
-            <OrgPicker required value={form.orgId} onChange={(v) => set("orgId", v)} />
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <JurisdictionPicker
+              required
+              value={form.jurisdictionId}
+              onChange={(v) => set("jurisdictionId", v)}
+            />
+
+            <OrgPicker
+              required
+              value={form.orgId}
+              onChange={(v) => set("orgId", v)}
+            />
           </div>
+
           <Input
             label="Badge ID (optional)"
             value={form.badgeId}
             onChange={(e) => set("badgeId", e.target.value)}
           />
+
           <ErrorText>{error}</ErrorText>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="secondary" onClick={onClose}>
+
+          <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              className="w-full sm:w-auto"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={busy}>
+
+            <Button
+              type="submit"
+              disabled={busy}
+              className="w-full sm:w-auto"
+            >
               {busy ? "Creating…" : "Provision user"}
             </Button>
           </div>

@@ -1,7 +1,18 @@
+
 import { useState } from "react";
+
 import { api } from "../../lib/api";
+
 import { CLASSIFICATIONS, titleCase } from "../../lib/format";
-import { Button, ErrorText, Input, Select, apiErrorMessage } from "../../components/ui";
+
+import {
+  Button,
+  ErrorText,
+  Input,
+  Select,
+  apiErrorMessage,
+} from "../../components/ui";
+
 import { JurisdictionPicker } from "../../components/ReferencePicker";
 
 export default function NewCaseDialog({ onClose, onCreated }) {
@@ -13,6 +24,7 @@ export default function NewCaseDialog({ onClose, onCreated }) {
     jurisdictionId: "",
     description: "",
   });
+
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -24,6 +36,7 @@ export default function NewCaseDialog({ onClose, onCreated }) {
     e.preventDefault();
     setBusy(true);
     setError("");
+
     try {
       const res = await api.post("/cases", form);
       onCreated(res.data);
@@ -35,17 +48,21 @@ export default function NewCaseDialog({ onClose, onCreated }) {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 px-4">
-      <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="text-lg font-semibold text-slate-900">New case</h2>
-        <form onSubmit={submit} className="mt-4 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+    <div className="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto bg-slate-900/50 px-4 py-4 sm:py-6">
+      <div className="w-full max-w-lg rounded-lg bg-white p-4 shadow-xl sm:p-6">
+        <h2 className="text-lg font-semibold text-slate-900">
+          New case
+        </h2>
+
+        <form className="mt-4 space-y-4" onSubmit={submit}>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Input
               label="Case number"
               required
               value={form.caseNumber}
               onChange={(e) => set("caseNumber", e.target.value)}
             />
+
             <Input
               label="Case type"
               required
@@ -54,13 +71,15 @@ export default function NewCaseDialog({ onClose, onCreated }) {
               onChange={(e) => set("type", e.target.value)}
             />
           </div>
+
           <Input
             label="Title"
             required
             value={form.title}
             onChange={(e) => set("title", e.target.value)}
           />
-          <div className="grid grid-cols-2 gap-3">
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Select
               label="Classification"
               value={form.classification}
@@ -72,14 +91,19 @@ export default function NewCaseDialog({ onClose, onCreated }) {
                 </option>
               ))}
             </Select>
+
             <JurisdictionPicker
               required
               value={form.jurisdictionId}
               onChange={(v) => set("jurisdictionId", v)}
             />
           </div>
+
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-slate-700">Description</span>
+            <span className="mb-1 block text-sm font-medium text-slate-700">
+              Description
+            </span>
+
             <textarea
               rows={3}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-600"
@@ -87,12 +111,24 @@ export default function NewCaseDialog({ onClose, onCreated }) {
               onChange={(e) => set("description", e.target.value)}
             />
           </label>
+
           <ErrorText>{error}</ErrorText>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="secondary" onClick={onClose}>
+
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              className="w-full sm:w-auto"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={busy}>
+
+            <Button
+              type="submit"
+              disabled={busy}
+              className="w-full sm:w-auto"
+            >
               {busy ? "Creating…" : "Create case"}
             </Button>
           </div>
@@ -101,3 +137,5 @@ export default function NewCaseDialog({ onClose, onCreated }) {
     </div>
   );
 }
+
+

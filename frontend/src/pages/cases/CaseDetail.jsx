@@ -216,7 +216,7 @@ export default function CaseDetail() {
                   <Select
                     value={caseData.status}
                     onChange={(e) => handleStatusChange(e.target.value)}
-                    className="!py-1 text-xs"
+                    className="py-1! text-xs"
                   >
                     {CASE_STATUSES.map((s) => (
                       <option key={s} value={s}>

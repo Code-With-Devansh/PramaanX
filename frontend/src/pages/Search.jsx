@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
+
 import { Link } from "react-router-dom";
+
 import { api } from "../lib/api";
+
 import { CLASSIFICATIONS, DOC_TYPES, titleCase } from "../lib/format";
+
 import {
   Card,
   ClassificationBadge,
@@ -32,8 +36,10 @@ export default function Search() {
       setResults(null);
       return;
     }
+
     setLoading(true);
     setError("");
+
     try {
       const res = await api.get("/search", {
         params: {
@@ -44,6 +50,7 @@ export default function Search() {
           pageSize: 20,
         },
       });
+
       setResults(res.data.results);
       setTotal(res.data.total);
     } catch (err) {
@@ -59,12 +66,15 @@ export default function Search() {
   }, [run]);
 
   return (
-    <div>
-      <PageHeader title="Search" subtitle="Search documents you have access to across every case." />
+    <div className="w-full min-w-0">
+      <PageHeader
+        title="Search"
+        subtitle="Search documents you have access to across every case."
+      />
 
       <Card className="mb-4 p-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="min-w-[260px] flex-1">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+          <div className="w-full min-w-0 flex-1 sm:min-w-260px">
             <Input
               label="Keywords"
               placeholder="Title, description, extracted text, tags…"
@@ -73,9 +83,15 @@ export default function Search() {
               autoFocus
             />
           </div>
-          <div className="w-48">
-            <Select label="Document type" value={docType} onChange={(e) => setDocType(e.target.value)}>
+
+          <div className="w-full sm:w-48">
+            <Select
+              label="Document type"
+              value={docType}
+              onChange={(e) => setDocType(e.target.value)}
+            >
               <option value="">Any type</option>
+
               {DOC_TYPES.map((t) => (
                 <option key={t} value={t}>
                   {titleCase(t)}
@@ -83,13 +99,15 @@ export default function Search() {
               ))}
             </Select>
           </div>
-          <div className="w-48">
+
+          <div className="w-full sm:w-48">
             <Select
               label="Classification"
               value={classification}
               onChange={(e) => setClassification(e.target.value)}
             >
               <option value="">Any classification</option>
+
               {CLASSIFICATIONS.map((c) => (
                 <option key={c} value={c}>
                   {titleCase(c)}
@@ -103,32 +121,51 @@ export default function Search() {
       <ErrorText>{error}</ErrorText>
 
       {!hasCriteria ? (
-        <EmptyState title="Enter a search" subtitle="Type keywords or pick a filter to search documents." />
+        <EmptyState
+          title="Enter a search"
+          subtitle="Type keywords or pick a filter to search documents."
+        />
       ) : loading ? (
         <div className="flex justify-center py-16">
           <Spinner />
         </div>
       ) : results && results.length === 0 ? (
-        <EmptyState title="No matching documents" subtitle="Try different keywords or filters." />
+        <EmptyState
+          title="No matching documents"
+          subtitle="Try different keywords or filters."
+        />
       ) : results ? (
         <>
-          <p className="mb-2 text-xs text-slate-500">{total} result{total === 1 ? "" : "s"}</p>
+          <p className="mb-2 text-xs text-slate-500">
+            {total} result{total === 1 ? "" : "s"}
+          </p>
+
           <Card className="overflow-hidden">
             <div className="divide-y divide-slate-100">
               {results.map((r) => (
                 <Link
                   key={r.documentId}
                   to={`/documents/${r.documentId}`}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-slate-50"
+                  className="flex min-w-0 flex-col gap-2 px-4 py-3 hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-900">{r.title}</p>
-                    <p className="text-xs text-slate-500">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-900">
+                      {r.title}
+                    </p>
+
+                    <p className="wrap-break-words text-xs text-slate-500">
                       {titleCase(r.docType)}
-                      {r.tags?.length ? ` · ${r.tags.join(", ")}` : ""}
+                      {r.tags?.length
+                        ? ` · ${r.tags.join(", ")}`
+                        : ""}
                     </p>
                   </div>
-                  <ClassificationBadge value={r.classification} />
+
+                  <div className="shrink-0">
+                    <ClassificationBadge
+                      value={r.classification}
+                    />
+                  </div>
                 </Link>
               ))}
             </div>
