@@ -1,0 +1,197 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: pramaanX-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    networks:
+      - internal
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pramaanX
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+  redis:
+    image: redis:8-alpine
+    container_name: pramaanX-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - internal
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: pramaanX-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # web console -> http://localhost:9001 (minioadmin/minioadmin)
+    networks:
+      - internal
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      # Built-in single-key KMS so SSE-S3 works in dev without standing up KES.
+      # DEV-ONLY key — prod uses a real KMS/HSM; never reuse this value.
+      MINIO_KMS_SECRET_KEY: "dms-dev-key:LlrslPGKQIlzbsb/AR2WMlmKNvPY4Q+Q+5kWRHejXzU="
+    volumes:
+      - minio_data:/data
+
+  opensearch:
+    image: opensearchproject/opensearch:2.19.0
+    container_name: pramaanX-opensearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      # Dev-only: disables the security plugin so the client can hit it with no
+      # auth/TLS. Never do this in prod — use OPENSEARCH_USERNAME/PASSWORD +
+      # OPENSEARCH_REJECT_UNAUTHORIZED=true against a real cluster instead.
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    networks:
+      - internal
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: dockerfile.dev
+    container_name: pramaanX-api
+
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      minio:
+        condition: service_started
+      opensearch:
+        condition: service_healthy
+    volumes:
+      - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
+      # Fabric crypto (DEV-ONLY, gitignored). Only read when LEDGER_DRIVER=fabric.
+      - ./.fabric-crypto:/fabric/crypto:ro
+    ports:
+      - "3000:3000"
+    networks:
+      - internal
+    environment:
+      PORT: 3000
+
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/DMS
+      REDIS_URL: redis://redis:6379
+
+      # Object storage (MinIO). The API reaches MinIO over the Docker network
+      # (minio:9000); presigned URLs must use a browser-reachable host, so the
+      # public endpoint points at localhost:9000.
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_PUBLIC_ENDPOINT: http://localhost:9000
+      STORAGE_REGION: us-east-1
+      STORAGE_BUCKET: dms-documents
+      STORAGE_ACCESS_KEY: minioadmin
+      STORAGE_SECRET_KEY: minioadmin
+      STORAGE_FORCE_PATH_STYLE: "true"
+      STORAGE_SSE: AES256
+      OPENSEARCH_NODES: http://opensearch:9200
+      # Fabric integrity ledger (only used when LEDGER_DRIVER=fabric). Reaches the
+      # WSL2 test-network peer via the host gateway; crypto is mounted read-only.
+      # Endorsement is currently OR('Org1MSP.member'), so only the Org1 peer need
+      # be reachable (the AND(Org1,Org2) seal policy is a later hardening step).
+      FABRIC_PEER_ENDPOINT: host.docker.internal:7051
+      FABRIC_SIGN_CERT: /fabric/crypto/signcert.pem
+      FABRIC_SIGN_KEY: /fabric/crypto/key.pem
+      FABRIC_TLS_ROOT_CERT: /fabric/crypto/tls-ca.crt
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: sh -c "npm install && npx nodemon --legacy-watch src/app.js"
+  worker:
+    build:
+      context: .
+      dockerfile: dockerfile.dev
+    container_name: pramaanX-worker
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
+      # Fabric crypto (DEV-ONLY, gitignored). Only read when LEDGER_DRIVER=fabric.
+      - ./.fabric-crypto:/fabric/crypto:ro
+    networks:
+      - internal
+    # No ports: the worker is a background consumer, not an HTTP service. It
+    # reaches Postgres + Redis over the internal network. It does NOT touch object
+    # storage (its import graph excludes src/storage), so no MinIO env is needed.
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/DMS
+      REDIS_URL: redis://redis:6379
+      # LEDGER_DRIVER is intentionally NOT set here so it comes from .env (like the
+      # api): LEDGER_DRIVER=fabric in .env then enables the real ledger for BOTH
+      # the API and this worker at once. The worker is the process that anchors, so
+      # it needs Fabric reachability + crypto too.
+      FABRIC_PEER_ENDPOINT: host.docker.internal:7051
+      FABRIC_SIGN_CERT: /fabric/crypto/signcert.pem
+      FABRIC_SIGN_KEY: /fabric/crypto/key.pem
+      FABRIC_TLS_ROOT_CERT: /fabric/crypto/tls-ca.crt
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: sh -c "npm install && npx nodemon --legacy-watch src/worker.js"
+  migrate:
+    build:
+      context: .
+      dockerfile: dockerfile.dev
+    container_name: pramaanX-migrate
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/DMS
+    volumes:
+      - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
+    command: sh -c "npm install && npm run migrate"
+    restart: "no"
+    networks:
+      - internal
+volumes:
+  pgadmin_data:
+  postgres_data:
+  redis_data:
+  node_modules:
+  minio_data:
+  opensearch_data:
+
+networks:
+  internal:
+    driver: bridge
