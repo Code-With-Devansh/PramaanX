@@ -1,0 +1,103 @@
+import { useState } from "react";
+import { api } from "../../lib/api";
+import { CLASSIFICATIONS, titleCase } from "../../lib/format";
+import { Button, ErrorText, Input, Select, apiErrorMessage } from "../../components/ui";
+import { JurisdictionPicker } from "../../components/ReferencePicker";
+
+export default function NewCaseDialog({ onClose, onCreated }) {
+  const [form, setForm] = useState({
+    caseNumber: "",
+    title: "",
+    type: "",
+    classification: "RESTRICTED",
+    jurisdictionId: "",
+    description: "",
+  });
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  function set(field, value) {
+    setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const res = await api.post("/cases", form);
+      onCreated(res.data);
+    } catch (err) {
+      setError(apiErrorMessage(err, "Could not create case."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 px-4">
+      <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+        <h2 className="text-lg font-semibold text-slate-900">New case</h2>
+        <form onSubmit={submit} className="mt-4 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Case number"
+              required
+              value={form.caseNumber}
+              onChange={(e) => set("caseNumber", e.target.value)}
+            />
+            <Input
+              label="Case type"
+              required
+              placeholder="e.g. Criminal"
+              value={form.type}
+              onChange={(e) => set("type", e.target.value)}
+            />
+          </div>
+          <Input
+            label="Title"
+            required
+            value={form.title}
+            onChange={(e) => set("title", e.target.value)}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Select
+              label="Classification"
+              value={form.classification}
+              onChange={(e) => set("classification", e.target.value)}
+            >
+              {CLASSIFICATIONS.map((c) => (
+                <option key={c} value={c}>
+                  {titleCase(c)}
+                </option>
+              ))}
+            </Select>
+            <JurisdictionPicker
+              required
+              value={form.jurisdictionId}
+              onChange={(v) => set("jurisdictionId", v)}
+            />
+          </div>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium text-slate-700">Description</span>
+            <textarea
+              rows={3}
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-600"
+              value={form.description}
+              onChange={(e) => set("description", e.target.value)}
+            />
+          </label>
+          <ErrorText>{error}</ErrorText>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="secondary" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={busy}>
+              {busy ? "Creating…" : "Create case"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
