@@ -1,0 +1,54 @@
+0.1 search is implemented, the next step is to get the location of the searched text. (if possible).
+
+0. onboard org changes user role to admin and they lose some powers.
+1. Seal does not gate on integrity. The document above sealed while integrityStatus:TAMPERED. That matches the plan (seal checks anchoring, not byte-integrity), but it means a tampered document can still be sealed. If seal should require VERIFIED first, that's a small, well-contained follow-up.
+
+2. /cases/:id/legal-hold has DELETE wired to setHoldReason and POST wired to releaseHold — that looks swapped (setting a hold should be POST, releasing should be DELETE).
+
+3. Documents and audit routes aren't behind requireAuth — only the currentUser dev shim, which fabricates a user if req.user is unset. Only POST /documents/:id/seal has real auth.
+
+4. Dev identity shim (currentUser): if no req.user is already set, injects a fixed dev user id from config. This is currently mounted on all documents/* and audit/* routes except POST /documents/:id/seal.
+
+5. LEGAL_HOLD_REQUIRED and INTEGRITY_FAILED error codes are defined but no code path throws them yet — likely still landing.
+
+6. POST /logout returns HTTP 200 with a body claiming status: 204 rather than an actual 204 No Content.
+
+7. The entire documents & audit API has no real authentication.
+src/routes/documents.route.js and src/routes/audit.route.js both mount currentUser (a dev shim: "Dev identity shim; a real auth middleware mounted upstream will supersede it") instead of requireAuth. But nothing upstream ever sets req.user, so currentUser always falls back to config.dev.userId — a hardcoded UUID from env. Result: upload, download, list, versions, integrity, custody, and the entire audit log are reachable with zero authentication, all running as one fixed identity. authorize() then runs RBAC/ABAC against whatever role that dev user happens to have in the DB. Contrast with cases.route.js, users.route.js, governance.route.js, which correctly do router.use(requireAuth). This single wiring gap defeats the auth/RBAC/ABAC/MFA system described in DESIGN §6–8 for the two most sensitive resource types in a legal evidence system.
+
+8. changePassword is inverted — no one can ever change their password after first login
+
+9. Dead code path that will throw at runtime: revokeRefreshToken.
+
+10. User enumeration + timing side-channel on login. login() does findActiveByUsername → if (!user) throw notFound(...)
+
+11. . Redis-backed token state has no TTLs on several paths → unbounded growth + revocation state that outlives the JWT.
+
+12. Upload pipeline has no content validation.
+
+13. Watermarking on download is a stub. DESIGN §12 calls for a viewer-name/timestamp watermark on document downloads; documents.service.js accepts the watermark flag, logs it, but returns the raw presigned URL unmodified (TODO(watermark)). Not a bug, but worth flagging since it's called out in your "Demo Moments" as a differentiator and isn't actually functional yet.
+
+14. Encryption is currently SSE-only, not the envelope encryption DESIGN's glossary implies.
+----------------------------------------------------------------------------------------------------------------------------------------------
+7. Reasonably good for a dev/prototype stage, but there are real gaps if this is heading toward production. Breakdown:
+
+**Solid parts**
+- Fabric transactions are signed with real per-identity private keys (ECDSA via `signers.newPrivateKeySigner`), TLS to the peer, and JWT verification pins `algorithms: ["HS256"]` explicitly — good, deliberate defense against algorithm-confusion attacks.
+- Audit log is hash-chained (`prev_hash` linkage) with canonicalized payloads, so tampering with a past entry breaks the chain — solid tamper-evidence design.
+- Key material is gitignored (`.fabric-crypto/`) with a comment warning never to commit it.
+
+**Where it falls short of "secure enough" for production:**
+
+1. **Shared signing identity, not per-user.** The comment in `fabricLedger.js` says outright: *"In dev this is the Org1 (Police) Admin material... Prod swaps this for a per-user HSM/wallet identity."* Right now every anchored transaction is signed by one shared admin identity — so the ledger can prove "someone at Org1 did this," not "this specific user did this." That undermines non-repudiation, which is usually the whole point of putting things on a permissioned ledger for a case-management/evidence system.
+
+2. **Private key sits on disk in plaintext**, read via `readFileSync(cfg.signKeyPath)` with no passphrase/HSM. Fine for a WSL test-network demo; not fine if that container is ever internet-facing.
+
+3. **No document-level signatures.** Nothing here signs the actual evidence files — only hashes (SHA-256) get anchored. That protects against undetected *tampering* but doesn't give you signer-authenticity or non-repudiation on the document content itself (e.g., "officer X attested to this exact file").
+
+4. **JWT secrets are HMAC (HS256), not asymmetric.** That's fine for a monolith but means anything holding the secret can mint tokens — no separation between signer and verifier.
+
+5. **Encryption is SSE-S3/MinIO server-side only** (`encryption.js` phase 1) — storage holds the keys, so it protects against disk theft, not against a compromised storage layer. The file itself flags phase 2 (app-level envelope encryption) as future work.
+
+6. **Ledger driver defaults to `"memory"`** — the in-memory stub is what actually runs unless `LEDGER_DRIVER=fabric` is explicitly set, so real signing doesn't happen unless that's turned on deliberately.
+
+**Bottom line:** the *design* (hash-chained audit log + on-chain hash anchoring + signed Fabric transactions) is architecturally sound for tamper-evidence. But the *identity* model (shared admin key, not per-user) is the biggest real gap — if you need to answer "who exactly signed off on this evidence," it can't yet. That plus disk-resident private keys and stub-by-default ledger driver are the things I'd flag before calling this production-secure.

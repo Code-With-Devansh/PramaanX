@@ -74,6 +74,46 @@ export default {
     // Fallback identity used by middlewares/currentUser.js until real auth lands.
     userId: process.env.DEV_USER_ID || "00000000-0000-0000-0000-000000000001",
   },
+  // Document-intelligence pipeline (src/jobs/documentProcessing.*). Consumed by
+  // the worker; the API only reads `enabled`/`queueName` to decide whether to
+  // enqueue after an upload.
+  processing: {
+    // Master switch. When false, uploads skip enqueue (rows stay SCANNING) —
+    // for environments with no worker/ClamAV/OCR.
+    enabled: (process.env.PROCESSING_ENABLED || "true") !== "false",
+    queueName: process.env.PROCESSING_QUEUE_NAME || "document-processing",
+    attempts: Number(process.env.PROCESSING_ATTEMPTS) || 3,
+    backoffMs: Number(process.env.PROCESSING_BACKOFF_MS) || 5000,
+    concurrency: Number(process.env.PROCESSING_CONCURRENCY) || 2,
+    // A version left in a non-terminal processing_status longer than this is
+    // considered stuck and re-enqueued by the worker's reconciliation sweep.
+    stuckAfterMs: Number(process.env.PROCESSING_STUCK_AFTER_MS) || 15 * 60_000,
+    reconcileEveryMs: Number(process.env.PROCESSING_RECONCILE_EVERY_MS) || 5 * 60_000,
+    // Largest file the pipeline will scan/extract. Defaults to the upload cap.
+    maxFileBytes:
+      Number(process.env.PROCESSING_MAX_FILE_BYTES) ||
+      Number(process.env.UPLOAD_MAX_BYTES) ||
+      52_428_800,
+    clamav: {
+      host: process.env.CLAMAV_HOST || "clamav",
+      port: Number(process.env.CLAMAV_PORT) || 3310,
+      timeoutMs: Number(process.env.CLAMAV_TIMEOUT_MS) || 30_000,
+    },
+    ocr: {
+      // Sidecar PaddleOCR HTTP service (services/ocr/).
+      url: process.env.OCR_URL || "http://ocr:8000",
+      timeoutMs: Number(process.env.OCR_TIMEOUT_MS) || 120_000,
+      lang: process.env.OCR_LANG || "en",
+      // A PDF whose native text yields fewer than this many chars per page is
+      // treated as scanned and sent to OCR.
+      minCharsPerPage: Number(process.env.OCR_MIN_CHARS_PER_PAGE) || 100,
+    },
+    // Ordered NER providers. "regex" is built in; "spacy"/"llm" are pluggable
+    // later behind the same seam (src/processing/ner/).
+    nerProviders: (process.env.NER_PROVIDERS || "regex").split(",").map((s) => s.trim()),
+    // Ordered auto-tagging stages (src/processing/tagging/).
+    taggingPipeline: (process.env.TAGGING_PIPELINE || "rules").split(",").map((s) => s.trim()),
+  },
   opensearch: {
     nodes: (process.env.OPENSEARCH_NODES || "http://opensearch:9200").split(","),
     username: process.env.OPENSEARCH_USERNAME || undefined,

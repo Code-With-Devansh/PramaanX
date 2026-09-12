@@ -4,7 +4,7 @@ import { getDocumentById } from "../repositories/documents.repo.js";
 import { authorize } from "../lib/authorize.js";
 
 // ── indexing (called from documentProcessing.processor.js) ────────────────────
-//        
+//
 // We index by documentId (not versionId): a document has exactly one *current*
 // version worth searching, so a re-index on every new version just overwrites
 // the same _id rather than accumulating stale historical copies in the index.

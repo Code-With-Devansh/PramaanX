@@ -1,0 +1,81 @@
+{
+  "_comment": "Template for the genesis ceremony. Copy, edit, and pass with --roster. `secret` is NOT here — it is supplied via GENESIS_SECRET or --secret-file. Each pool's m = members.length; k is optional (defaults to floor(m/2)+1, hard floor 2). Pool members are matched to roster users by email. `shares` is custodian METADATA only — never share bytes.",
+  "roster": [
+    {
+      "fullName": "Ada Founder",
+      "email": "ada@dms.example",
+      "role": "SYSTEM_ADMIN",
+      "org": "hq",
+      "clearance": "SECRET",
+      "jurisdiction": "federal"
+    },
+    {
+      "fullName": "Grace Founder",
+      "email": "grace@dms.example",
+      "role": "SYSTEM_ADMIN",
+      "org": "hq",
+      "clearance": "SECRET",
+      "jurisdiction": "federal"
+    },
+    {
+      "fullName": "Alan Founder",
+      "email": "alan@dms.example",
+      "role": "SYSTEM_ADMIN",
+      "org": "hq",
+      "clearance": "SECRET",
+      "jurisdiction": "federal"
+    },
+    {
+      "fullName": "Ren Security",
+      "email": "ren@dms.example",
+      "role": "SECURITY_ADMIN",
+      "org": "hq",
+      "clearance": "SECRET",
+      "jurisdiction": "federal"
+    },
+    {
+      "fullName": "Ivy Security",
+      "email": "ivy@dms.example",
+      "role": "SECURITY_ADMIN",
+      "org": "hq",
+      "clearance": "SECRET",
+      "jurisdiction": "federal"
+    },
+    {
+      "fullName": "Omar OrgAdmin",
+      "email": "omar@metro.example",
+      "role": "ORG_ADMIN",
+      "org": "metro-pd",
+      "clearance": "CONFIDENTIAL",
+      "jurisdiction": "state-metro"
+    },
+    {
+      "fullName": "Priya OrgAdmin",
+      "email": "priya@metro.example",
+      "role": "ORG_ADMIN",
+      "org": "metro-pd",
+      "clearance": "CONFIDENTIAL",
+      "jurisdiction": "state-metro"
+    }
+  ],
+  "pools": [
+    {
+      "poolType": "SYSTEM_ADMIN",
+      "members": ["ada@dms.example", "grace@dms.example", "alan@dms.example"]
+    },
+    {
+      "poolType": "SECURITY_ADMIN",
+      "members": ["ren@dms.example", "ivy@dms.example"]
+    },
+    {
+      "poolType": "ORG_ADMIN",
+      "org": "metro-pd",
+      "members": ["omar@metro.example", "priya@metro.example"]
+    }
+  ],
+  "shares": [
+    { "holderLabel": "Custodian A (offline vault)", "isColdStored": true },
+    { "holderLabel": "Custodian B (offline vault)", "isColdStored": true },
+    { "holderLabel": "Custodian C (HSM operator)", "isColdStored": false }
+  ]
+}
