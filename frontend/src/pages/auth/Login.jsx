@@ -54,10 +54,12 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-700 text-lg font-bold text-white">
-            DM
-          </div>
-          <h1 className="text-lg font-semibold text-slate-900">LexVault DMS</h1>
+          <div className="mx-auto flex h-35 w-35 items-center justify-center rounded-lg ">
+            
+              </div>
+         <h1 className="text-[#173B6C] text-5xl font-bold tracking-[0.08em] font-sans">
+  CASETRACE
+</h1>
           <p className="text-sm text-slate-500">Secure Legal &amp; Investigation Document System</p>
         </div>
 

@@ -43,14 +43,12 @@ export default function AppShell() {
   `}
       >
         <div className="flex h-16 items-center justify-between gap-2 border-b border-slate-200 px-5">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-blue-700 text-sm font-bold text-white">
-              DM
-            </div>
+          <div className="flex items-center">
+           
             <div className="leading-tight">
-              <p className="text-sm font-semibold text-slate-900">
-                LexVault DMS
-              </p>
+             <h1 className="text-[#173B6C] text-3xl font-bold tracking-[0.08em] font-sans">
+  CASETRACE
+</h1>
               <p className="text-[11px] text-slate-500">
                 Legal &amp; Investigation Records
               </p>
@@ -103,7 +101,7 @@ export default function AppShell() {
             ☰
           </button>
 
-          <p className="text-sm font-semibold text-slate-900">LexVault DMS</p>
+          <p className="text-sm font-semibold text-slate-900"> CASETRACE</p>
 
           <NotificationsBell />
         </header>
