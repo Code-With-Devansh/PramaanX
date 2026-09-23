@@ -79,14 +79,27 @@ async def ocr(file: UploadFile = File(...), lang: str = Form(DEFAULT_LANG)):
 
     try:
         if is_pdf:
-            images = convert_from_bytes(raw, dpi=DPI)
-            if len(images) > MAX_PAGES:
-                images = images[:MAX_PAGES]
-            for img in images:
+            # Render + OCR ONE page at a time instead of materializing every
+            # page as a PIL image up front: convert_from_bytes(..., last_page=N)
+            # still returns all N rendered pages as a single in-memory list, so
+            # a `MAX_PAGES`-page scan at DPI=200 held several hundred MB of
+            # raster data alongside PaddleOCR's own model weights — enough to
+            # OOM-kill this container under real-world files. Requesting one
+            # page per convert_from_bytes call keeps peak memory to ~1 page.
+            page_count = 0
+            for page_no in range(1, MAX_PAGES + 1):
+                pages = convert_from_bytes(
+                    raw, dpi=DPI, first_page=page_no, last_page=page_no
+                )
+                if not pages:
+                    break
+                img = pages[0]
                 text, confs = _ocr_image(engine, img)
                 pages_text.append(text)
                 all_confs.extend(confs)
-            page_count = len(images)
+                page_count += 1
+                img.close()
+                del pages, img
         else:
             img = Image.open(io.BytesIO(raw))
             text, confs = _ocr_image(engine, img)

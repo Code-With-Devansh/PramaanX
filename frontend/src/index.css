@@ -35,3 +35,69 @@ video {
   outline: 2px solid #1d4ed8;
   outline-offset: 2px;
 }
+
+/* Rendered .docx content (see DocumentPreview) — mammoth emits plain
+   semantic HTML with no classes, so give it baseline typography. */
+.docx-preview h1,
+.docx-preview h2,
+.docx-preview h3,
+.docx-preview h4 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 1.25em 0 0.5em;
+}
+
+.docx-preview h1 {
+  font-size: 1.5rem;
+}
+
+.docx-preview h2 {
+  font-size: 1.25rem;
+}
+
+.docx-preview h3 {
+  font-size: 1.1rem;
+}
+
+.docx-preview p {
+  margin: 0 0 0.85em;
+  line-height: 1.6;
+}
+
+.docx-preview ul,
+.docx-preview ol {
+  margin: 0 0 0.85em;
+  padding-left: 1.5em;
+}
+
+.docx-preview li {
+  margin-bottom: 0.25em;
+}
+
+.docx-preview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0 0 1em;
+}
+
+.docx-preview th,
+.docx-preview td {
+  border: 1px solid #e2e8f0;
+  padding: 0.4em 0.6em;
+  text-align: left;
+  vertical-align: top;
+}
+
+.docx-preview a {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.docx-preview strong {
+  font-weight: 600;
+}
+
+.docx-preview img {
+  max-width: 100%;
+  height: auto;
+}

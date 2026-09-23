@@ -50,6 +50,52 @@ services:
     volumes:
       - minio_data:/data
 
+  clamav:
+    image: clamav/clamav:1.4
+    container_name: pramaanX-clamav
+    restart: unless-stopped
+    networks:
+      - internal
+    volumes:
+      # Persist virus-definition DB across restarts — without this, freshclam
+      # re-downloads the full DB from scratch every time the container starts.
+      - clamav_data:/var/lib/clamav
+    # freshclam's first-run DB download can take a couple of minutes; clamd
+    # isn't listening until that finishes, so give it real start-up room.
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 180s
+
+  ocr:
+    build:
+      context: ./services/ocr
+    container_name: pramaanX-ocr
+    restart: unless-stopped
+    networks:
+      - internal
+    environment:
+      # PaddleOCR/numpy/OpenCV spin up one BLAS thread pool per core by
+      # default; that multiplies memory overhead for no real gain in a
+      # single-worker sidecar. Pin them down.
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    volumes:
+      # Cache PaddleOCR's downloaded models across container restarts.
+      - ocr_models:/root/.paddleocr
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   opensearch:
     image: opensearchproject/opensearch:2.19.0
     container_name: pramaanX-opensearch
@@ -142,6 +188,10 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      ocr:
+        condition: service_healthy
+      clamav:
+        condition: service_healthy
     volumes:
       - .:/usr/src/app
       - node_modules:/usr/src/app/node_modules
@@ -152,6 +202,7 @@ services:
     # No ports: the worker is a background consumer, not an HTTP service. It
     # reaches Postgres + Redis over the internal network. It does NOT touch object
     # storage (its import graph excludes src/storage), so no MinIO env is needed.
+    # It DOES need the OCR sidecar (PaddleOCR) reachable at OCR_URL.
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/pramaanX
       REDIS_URL: redis://redis:6379
@@ -191,6 +242,8 @@ volumes:
   node_modules:
   minio_data:
   opensearch_data:
+  ocr_models:
+  clamav_data:
 
 networks:
   internal:

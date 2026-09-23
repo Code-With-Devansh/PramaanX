@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
+import mammoth from "mammoth";
+
 import { api } from "../../lib/api";
 
 import { formatBytes } from "../../lib/format";
@@ -11,6 +13,8 @@ const IMAGE_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg"];
 const PDF_EXTS = ["pdf"];
 
 const TEXT_EXTS = ["txt", "csv", "log", "md", "json"];
+
+const DOCX_EXTS = ["docx"];
 
 const MIME_BY_EXT = {
   pdf: "application/pdf",
@@ -26,6 +30,7 @@ const MIME_BY_EXT = {
   log: "text/plain",
   md: "text/markdown",
   json: "application/json",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 };
 
 function extOf(fileName = "") {
@@ -38,12 +43,19 @@ function kindFor(fileName, mimeType) {
 
   if (mime.includes("pdf")) return "pdf";
   if (mime.startsWith("image/")) return "image";
+  if (
+    mime.includes(
+      "vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+  )
+    return "docx";
   if (mime.startsWith("text/")) return "text";
 
   const ext = extOf(fileName);
 
   if (PDF_EXTS.includes(ext)) return "pdf";
   if (IMAGE_EXTS.includes(ext)) return "image";
+  if (DOCX_EXTS.includes(ext)) return "docx";
   if (TEXT_EXTS.includes(ext)) return "text";
 
   return "unsupported";
@@ -73,6 +85,8 @@ export default function DocumentPreview({
 
   const [zoom, setZoom] = useState(1);
 
+  const [docxHtml, setDocxHtml] = useState("");
+
   const kind = useMemo(
     () => kindFor(fileName, mimeType),
     [fileName, mimeType]
@@ -88,6 +102,7 @@ export default function DocumentPreview({
     setError("");
     setDownloadUrl(null);
     setPreviewUrl(null);
+    setDocxHtml("");
     setZoom(1);
 
     (async () => {
@@ -123,8 +138,22 @@ export default function DocumentPreview({
 
         if (cancelled) return;
 
-        objectUrl = URL.createObjectURL(blob);
-        setPreviewUrl(objectUrl);
+        if (kind === "docx") {
+          // mammoth needs the raw bytes, not a blob: URL, so convert
+          // straight to sanitized-ish HTML we render into the page.
+          const arrayBuffer = await blob.arrayBuffer();
+
+          const { value: html } = await mammoth.convertToHtml({
+            arrayBuffer,
+          });
+
+          if (cancelled) return;
+
+          setDocxHtml(html);
+        } else {
+          objectUrl = URL.createObjectURL(blob);
+          setPreviewUrl(objectUrl);
+        }
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -144,7 +173,7 @@ export default function DocumentPreview({
         URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [documentId, versionId, fileName]);
+  }, [documentId, versionId, fileName, kind]);
 
   return (
     <div className="flex h-full min-w-0 flex-col">
@@ -266,6 +295,15 @@ export default function DocumentPreview({
               />
             </div>
           )}
+
+        {!loading && !error && kind === "docx" && docxHtml && (
+          <div className="flex min-h-full min-w-0 justify-center p-3 sm:p-6">
+            <div
+              className="docx-preview w-full max-w-3xl rounded bg-white p-6 text-sm text-slate-800 shadow-sm sm:p-10"
+              dangerouslySetInnerHTML={{ __html: docxHtml }}
+            />
+          </div>
+        )}
 
         {!loading &&
           !error &&

@@ -61,7 +61,10 @@ export function createClamAvScanner({ host, port, timeoutMs = 30_000 }) {
       socket.on("error", (err) => done(reject, err));
       socket.on("data", (d) => (response += d.toString("utf8")));
       socket.on("end", () => {
-        const line = response.trim();
+        // zINSTREAM replies are NUL-terminated on the wire (e.g. "stream: OK\0");
+        // .trim() only strips whitespace, so the trailing \0 survives and breaks
+        // the end-anchored regexes below unless it's stripped first.
+        const line = response.replace(/\0+$/, "").trim();
         // "stream: OK" | "stream: <Sig> FOUND" | "... ERROR"
         if (/\bOK$/.test(line)) return done(resolve, { clean: true, signature: null });
         const found = line.match(/stream:\s+(.*)\s+FOUND$/);

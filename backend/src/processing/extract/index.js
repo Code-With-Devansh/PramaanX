@@ -32,14 +32,22 @@ const empty = (mimeType) => ({ text: "", method: "none", confidence: null, pageC
 export function createExtractor({ ocrClient, minCharsPerPage = 100 }) {
   async function fromPdf({ buffer, fileName, mimeType }) {
     let parsed;
+    let doc;
     try {
-      const { default: pdfParse } = await import("pdf-parse");
-      parsed = await pdfParse(buffer);
+      // pdf-parse v2 dropped the old `pdfParse(buffer) -> {numpages, text}`
+      // default-export function entirely; it now ships a `PDFParse` class
+      // whose `getText()` returns { total, text, pages }.
+      const { PDFParse } = await import("pdf-parse");
+      doc = new PDFParse({ data: buffer });
+      const result = await doc.getText();
+      parsed = { numpages: result.total, text: result.text };
     } catch (err) {
       // A corrupt/encrypted PDF that pdf-parse can't open: fall back to OCR
       // rather than failing the whole job.
       console.warn(`[extract] pdf-parse failed (${err?.message ?? err}); trying OCR`);
       return fromOcr({ buffer, fileName, mimeType });
+    } finally {
+      await doc?.destroy().catch(() => {});
     }
     const pages = parsed.numpages || 1;
     const text = parsed.text ?? "";

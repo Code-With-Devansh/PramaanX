@@ -50,7 +50,10 @@ export function createPaddleOcrClient({ url, timeoutMs = 120_000, lang = "en" })
         clearTimeout(timer);
       }
     }
-    throw new Error(`PaddleOCR request failed: ${lastErr?.message ?? lastErr}`);
+    // fetch()'s TypeError("fetch failed") hides the real DNS/connect/TLS error
+    // in `.cause` — surface it so failures are diagnosable instead of generic.
+    const detail = lastErr?.cause?.message ?? lastErr?.message ?? lastErr;
+    throw new Error(`PaddleOCR request failed: ${detail}`, { cause: lastErr });
   }
 
   async function ping() {

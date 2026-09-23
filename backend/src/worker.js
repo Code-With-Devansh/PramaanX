@@ -123,6 +123,7 @@ processingWorker.on("failed", async (job, err) => {
   const maxAttempts = job.opts?.attempts ?? config.processing.attempts;
   const unrecoverable = err?.name === "UnrecoverableError";
   const terminal = unrecoverable || attemptsMade >= maxAttempts;
+  console.error(err)
   console.error(
     `[processing] failed for ${job.id} (attempt ${attemptsMade}/${maxAttempts})` +
       `${terminal ? " — terminal" : " — will retry"}: ${err?.message ?? err}`,
