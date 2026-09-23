@@ -40,9 +40,6 @@ export default function MfaEnroll() {
 
   const [busy, setBusy] = useState(false);
 
-  const [backupCodes, setBackupCodes] = useState(null);
-
-  const [postEnrollRedirect, setPostEnrollRedirect] = useState("/");
 
   useEffect(() => {
     (async () => {
@@ -76,13 +73,7 @@ export default function MfaEnroll() {
 
       const target = explicitRedirect || defaultRouteForRole(me.role);
 
-      if (res.data.backUpCodes?.length) {
-        setPostEnrollRedirect(target);
-
-        setBackupCodes(res.data.backUpCodes);
-      } else {
-        navigate(target, { replace: true });
-      }
+      navigate(target, { replace: true });
     } catch (err) {
       setError(apiErrorMessage(err, "Invalid code. Try again."));
     } finally {
@@ -90,42 +81,6 @@ export default function MfaEnroll() {
     }
   }
 
-  if (backupCodes) {
-    return (
-      <div className="flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-slate-100 px-4 py-6 sm:px-6 sm:py-8">
-        <Card className="w-full max-w-sm min-w-0 p-5 sm:p-6">
-          <h1 className="text-lg font-semibold leading-6 text-slate-900">
-            Save your backup codes
-          </h1>
-
-          <p className="mt-1 text-sm leading-5 text-slate-600">
-            Store these somewhere safe. Each can be used once if you lose
-            access to your authenticator.
-          </p>
-
-          <ul className="mt-4 grid grid-cols-1 gap-2 rounded-md bg-slate-50 p-3 font-mono text-sm sm:grid-cols-2">
-            {backupCodes.map((c) => (
-              <li
-                key={c}
-                className="min-w-0 break-all"
-              >
-                {c}
-              </li>
-            ))}
-          </ul>
-
-          <Button
-            className="mt-4 w-full"
-            onClick={() =>
-              navigate(postEnrollRedirect, { replace: true })
-            }
-          >
-            I've saved these — continue
-          </Button>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-slate-100 px-4 py-6 sm:px-6 sm:py-8">
