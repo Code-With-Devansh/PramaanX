@@ -3,6 +3,8 @@ import { useState } from "react";
 
 import { api } from "../../lib/api";
 
+import { useAuth } from "../../lib/AuthContext";
+
 import { CLASSIFICATIONS, titleCase } from "../../lib/format";
 
 import {
@@ -13,15 +15,21 @@ import {
   apiErrorMessage,
 } from "../../components/ui";
 
-import { JurisdictionPicker } from "../../components/ReferencePicker";
+import { useReference } from "../../lib/ReferenceContext";
 
 export default function NewCaseDialog({ onClose, onCreated }) {
+  const { user } = useAuth();
+  const { jurisdictionName } = useReference();
+
   const [form, setForm] = useState({
     caseNumber: "",
     title: "",
     type: "",
     classification: "RESTRICTED",
-    jurisdictionId: "",
+    // New cases are always filed under the creating user's own jurisdiction —
+    // it's not a free choice, so we seed it from the session and never let
+    // the picker be edited (see JurisdictionPicker below).
+    jurisdictionId: user?.jurisdictionId || "",
     description: "",
   });
 
@@ -92,10 +100,12 @@ export default function NewCaseDialog({ onClose, onCreated }) {
               ))}
             </Select>
 
-            <JurisdictionPicker
-              required
-              value={form.jurisdictionId}
-              onChange={(v) => set("jurisdictionId", v)}
+            <Input
+              label="Jurisdiction"
+              value={jurisdictionName(form.jurisdictionId)}
+              disabled
+              readOnly
+              className="bg-slate-100 text-slate-600"
             />
           </div>
 
